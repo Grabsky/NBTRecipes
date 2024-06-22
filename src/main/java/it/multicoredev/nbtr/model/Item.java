@@ -1,16 +1,17 @@
 package it.multicoredev.nbtr.model;
 
-import de.tr7zw.changeme.nbtapi.NBTContainer;
-import de.tr7zw.changeme.nbtapi.NBTItem;
 import it.multicoredev.mbcore.spigot.Text;
 import it.multicoredev.nbtr.utils.ChatFormat;
 import it.multicoredev.nbtr.utils.VersionUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
+
+import org.jetbrains.annotations.Nullable;
 
 /**
  * BSD 3-Clause License
@@ -44,50 +45,23 @@ import java.util.List;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public class Item {
-    private Material material;
-    private Integer amount;
-    private String name;
-    private List<String> lore;
-    private String nbt;
+    private final @Nullable Material material;
+    private final @Nullable Integer amount;
+    private final @Nullable String name;
+    private final @Nullable List<String> lore;
+    private final @Nullable String nbt;
+    private final @Nullable String components;
 
-
-    public Item(Material material, Integer amount, String name, List<String> lore, String nbt) {
+    public Item(final @Nullable Material material, final @Nullable Integer amount, final @Nullable String name, final @Nullable List<String> lore, final @Nullable String nbt, final @Nullable String components) {
         this.material = material;
         this.amount = amount;
         this.name = name;
         this.lore = lore;
         this.nbt = nbt;
+        this.components = components;
     }
 
-    public Item(Material material, Integer amount, String name, List<String> lore) {
-        this(material, amount, name, lore, null);
-    }
-
-    public Item(Material material, Integer amount, String name) {
-        this(material, amount, name, null, null);
-    }
-
-    public Item(Material material, Integer amount) {
-        this(material, amount, null, null, null);
-    }
-
-    public Item(Material material) {
-        this(material, 1, null, null, null);
-    }
-
-    public Item(Material material, String name, List<String> lore, String nbt) {
-        this(material, 1, name, lore, nbt);
-    }
-
-    public Item(Material material, String name, List<String> lore) {
-        this(material, 1, name, lore, null);
-    }
-
-    public Item(Material material, String name) {
-        this(material, 1, name, null, null);
-    }
-
-    public Material getMaterial() {
+    public @Nullable Material getMaterial() {
         return material;
     }
 
@@ -96,21 +70,32 @@ public class Item {
         return 1;
     }
 
-    public String getName() {
+    public @Nullable String getName() {
         return name;
     }
 
-    public List<String> getLore() {
+    public @Nullable List<String> getLore() {
         return lore;
     }
 
-    public String getNbt() {
+    public @Nullable String geNBT() {
         return nbt;
     }
 
-    @SuppressWarnings("deprecation") // Suppressing @Deprecated warnings. It's Paper that deprecates ChatColor methods and they're called only when running Spigot.
+    @SuppressWarnings("deprecation") // Suppressing @Deprecated warnings. It's Paper that deprecates ChatColor methods and they're called only when running Spigot. It's also Bukkit#getUnsafe which we must use at this point.
     public ItemStack toItemStack() throws IllegalArgumentException {
-        ItemStack item = new ItemStack(material);
+        final ItemStack item = new ItemStack(material);
+        // Setting NBT/Components if specified. This is called first as it can be overridden by named properties in next steps.
+        if (Bukkit.getUnsafe().getProtocolVersion() >= 766) {
+            if (nbt != null)
+                throw new IllegalArgumentException("Versions 1.20.5 and higher must not use \"nbt\" but use \"components\" instead.");
+            // On versions that are equal to or higher than 1.20.5, we're using "components" property.
+            else if (components != null && !components.trim().isEmpty())
+                Bukkit.getUnsafe().modifyItemStack(item, material.key().asString() + components);
+        // On versions lower than 1.20.5, we're using "nbt" property.
+        } else if (nbt != null && !nbt.trim().isEmpty()) {
+            Bukkit.getUnsafe().modifyItemStack(item, material.key().asString() + nbt);
+        }
         // Setting amount if specified and greater than 0.
         if (amount != null && amount > 0)
             item.setAmount(Math.min(material.getMaxStackSize(), amount));
@@ -129,19 +114,6 @@ public class Item {
                 else meta.setLore(lore.stream().map(line -> ChatColor.translateAlternateColorCodes('&', line)).toList());
             // Updating item meta.
             item.setItemMeta(meta);
-        }
-        // Setting additional NBT if specified.
-        if (nbt != null && !nbt.trim().isEmpty()) {
-            final NBTItem nbti = new NBTItem(item);
-            try {
-                // Trying to merge current NBT with the one specified.
-                nbti.mergeCompound(new NBTContainer(nbt));
-                // Replacing item with one created from merging NBT.
-                item = nbti.getItem();
-            } catch (Exception e) {
-                // Re-throwing as IllegalArgumentException to be handled somewhere else.
-                throw new IllegalArgumentException(e);
-            }
         }
         // Finally, retuning the item.
         return item;

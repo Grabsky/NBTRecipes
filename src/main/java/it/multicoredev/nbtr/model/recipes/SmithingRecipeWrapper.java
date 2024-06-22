@@ -3,6 +3,7 @@ package it.multicoredev.nbtr.model.recipes;
 import it.multicoredev.nbtr.model.Item;
 import it.multicoredev.nbtr.utils.SmithingRecipeGenerator;
 import it.multicoredev.nbtr.utils.VersionUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.SmithingRecipe;
 
@@ -49,7 +50,7 @@ public class SmithingRecipeWrapper extends RecipeWrapper {
 
     @Override
     public SmithingRecipe toBukkit() {
-        return (VersionUtils.getVersion() >= 20)
+        return (Bukkit.getUnsafe().getProtocolVersion() >= 763)
                 ? SmithingRecipeGenerator.newSmithingRecipe(namespacedKey, result.toItemStack(), template, base, addition)
                 : new SmithingRecipe(namespacedKey, result.toItemStack(), base, addition);
     }

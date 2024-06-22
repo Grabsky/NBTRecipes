@@ -38,6 +38,7 @@ public class VersionUtils {
     public static final boolean isPaper = hasClass("com.destroystokyo.paper.PaperConfig") || hasClass("io.papermc.paper.configuration.Configuration");
 
     public static int getVersion() {
+        Bukkit.getUnsafe().getProtocolVersion();
         String rawVersion = Bukkit.getBukkitVersion();
         if (rawVersion.contains("-")) rawVersion = rawVersion.substring(0, rawVersion.indexOf("-"));
         if (!rawVersion.contains(".")) throw new IllegalStateException("Invalid version found: " + rawVersion);

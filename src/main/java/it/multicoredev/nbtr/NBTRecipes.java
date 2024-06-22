@@ -143,12 +143,13 @@ public class NBTRecipes extends JavaPlugin {
                         getLogger().warning("Recipe \"" + file.getName() + "\" is invalid.");
                         continue;
                     }
-
                     recipe.init(getNamespacedKey(file));
                     recipes.add(recipe);
                 } catch (Exception e) {
-                    getLogger().severe("Loading of recipe \"" + file.getName() + "\" failed with error: (" + e.getClass().getSimpleName() + ")");
-                    getLogger().severe("  " + e.getMessage());
+                    getLogger().severe("Loading of recipe \"" + file.getName() + "\" failed due to following error(s):");
+                    getLogger().severe(" (1) "  + e.getClass().getSimpleName() + ": " + e.getMessage());
+                    if (e.getCause() != null)
+                        getLogger().severe(" (2) " + e.getCause().getClass().getSimpleName() + ": " + e.getCause().getMessage());
                 }
             }
         }
@@ -167,8 +168,10 @@ public class NBTRecipes extends JavaPlugin {
                 getServer().addRecipe(recipe.toBukkit());
                 registeredRecipes.add(recipe.getKey());
             } catch (Exception e) {
-                getLogger().severe("Registration of recipe \"" + recipe.getKey() + "\" failed with error: (" + e.getClass().getSimpleName() + ")");
-                getLogger().severe("  " + e.getMessage());
+                getLogger().severe("Registration of recipe \"" + recipe.getKey() + "\" failed due to following error(s):");
+                getLogger().severe(" (1) "  + e.getClass().getSimpleName() + ": " + e.getMessage());
+                if (e.getCause() != null)
+                    getLogger().severe(" (2) " + e.getCause().getClass().getSimpleName() + ": " + e.getCause().getMessage());
             }
         });
     }
