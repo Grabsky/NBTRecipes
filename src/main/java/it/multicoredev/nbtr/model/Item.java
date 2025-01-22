@@ -82,6 +82,10 @@ public class Item {
         return nbt;
     }
 
+    public @Nullable String getComponents() {
+        return components;
+    }
+
     @SuppressWarnings("deprecation") // Suppressing @Deprecated warnings. It's Paper that deprecates ChatColor methods and they're called only when running Spigot. It's also Bukkit#getUnsafe which we must use at this point.
     public ItemStack toItemStack() throws IllegalArgumentException {
         final ItemStack item = new ItemStack(material);

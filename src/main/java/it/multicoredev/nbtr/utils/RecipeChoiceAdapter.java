@@ -65,7 +65,7 @@ public final class RecipeChoiceAdapter implements JsonDeserializer<RecipeChoice>
                     return RecipeChoice.empty();
                 // Returning MaterialChoice if metadata is empty, or ExactChoice otherwise.
                 try {
-                    return (!item.toItemStack().hasItemMeta())
+                    return (item.geNBT() == null && item.getComponents() == null && !item.toItemStack().hasItemMeta())
                             ? new RecipeChoice.MaterialChoice(item.toItemStack().getType())
                             : new RecipeChoice.ExactChoice(item.toItemStack());
                 } catch (final IllegalArgumentException e) {
