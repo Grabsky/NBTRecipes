@@ -18,10 +18,13 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * BSD 3-Clause License
@@ -127,10 +130,14 @@ public class NBTRecipes extends JavaPlugin {
     }
 
     private void loadRecipes(File dir) {
-        File[] files = dir.listFiles();
-        if (files == null) return;
-
-        for (File file : files) {
+        final File[] files = dir.listFiles();
+        // Returning if there is no files in the specified dir.
+        if (files == null || files.length == 0) {
+            getLogger().info("No recipes defined in the \"" + dir.getName() + "\" directory.");
+            return;
+        }
+        // Sorting and iterating through files in natural order to ensure that they are loaded in the same order every time.
+        for (final File file : Stream.of(files).sorted(Comparator.naturalOrder()).toList()) {
             if (file.isDirectory()) {
                 loadRecipes(file);
             } else {
